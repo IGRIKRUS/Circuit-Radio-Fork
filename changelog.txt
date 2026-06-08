@@ -1,0 +1,35 @@
+---------------------------------------------------------------------------------------------------
+Version: 0.1.5
+Date: 2026-06-05
+  Bugfixes:
+    - Limited channel numbers to 2147483647 to avoid huge scientific-notation values.
+
+---------------------------------------------------------------------------------------------------
+Version: 0.1.4
+Date: 2026-06-05
+  Minor Features:
+    - Added changelog.
+
+---------------------------------------------------------------------------------------------------
+Version: 0.1.3
+Date: 2026-06-04
+  Bugfixes:
+    - Prevented the Circuit Radio GUI from opening while using copy, cut, blueprint, deconstruction, or upgrade selection tools.
+
+---------------------------------------------------------------------------------------------------
+Version: 0.1.2
+Date: 2026-05-29
+  Bugfixes:
+    - Added extra defensive cleanup for hidden helper entities and stored mod data.
+
+---------------------------------------------------------------------------------------------------
+Version: 0.1.1
+Date: 2026-05-28
+  Bugfixes:
+    - Fixed a crash when creating blueprints from some blueprint-library workflows.
+
+---------------------------------------------------------------------------------------------------
+Version: 0.1.0
+Date: 2026-05-21
+  Features:
+    - Initial release.

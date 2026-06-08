@@ -1,0 +1,9 @@
+{
+  "name": "circuit-radio",
+  "version": "0.1.6",
+  "title": "Circuit Radio (Beta Fork)",
+  "author": "Andriy, modify by igrik",
+  "factorio_version": "2.0",
+  "dependencies": ["base >= 2.0", "flib >= 0.16.5"],
+  "description": "Adds a simple 1x1 radio node that joins a virtual red/green circuit network selected by one signal/value channel."
+}
