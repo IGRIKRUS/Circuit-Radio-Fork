@@ -210,7 +210,7 @@ function gui_elements.channels_deleted_row(channel_table)
         {
             type = "label",
             style = "bold_label",
-            caption = "Deleted",
+            caption = { 'radio-interface.row-channel-deleted' },
         },
     })
 
@@ -218,19 +218,12 @@ function gui_elements.channels_deleted_row(channel_table)
         type = "flow",
         direction = "horizontal",
         minimal_width = 50,
-        vertical_align = "center",
-        {
-            type = "label",
-            caption = 0,
-        },
     })
 
     table.insert(channel_table, {
         type = "flow",
         direction = "horizontal",
         minimal_width = 55,
-        vertical_align = "center",
-        horizontal_align = "center"
     })
 end
 
@@ -318,13 +311,13 @@ function gui_elements.radios_row(
     })
 end
 
-function gui_elements.radios_deleted_row(radios_table)
+function gui_elements.radios_deleted_row(radios_table, index)
     table.insert(radios_table, {
         type = "flow",
         direction = "horizontal",
         minimal_width = 80,
         vertical_align = "center",
-        { type = "label", caption = "#destroyed" },
+        { type = "label", caption = "#" .. index },
     })
 
     table.insert(radios_table, {
@@ -333,13 +326,13 @@ function gui_elements.radios_deleted_row(radios_table)
         minimal_width = 150,
         vertical_align = "center",
         horizontal_align = "center",
-        { type = "sprite", sprite = "virtual-signal/signal-unknown" },
+        { type = "sprite", sprite = "virtual-signal/signal-trash-bin" },
         {
             type = "flow",
             direction = "horizontal",
             vertical_align = "center",
             style_mods = { top_margin = 10, left_margin = 2 },
-            { type = "label", caption = "destroyed" },
+            { type = "label", caption = { 'radio-interface.row-radio-deleted' } },
         },
     })
 
@@ -360,7 +353,8 @@ function gui_elements.pagination_footer(prefix, prev_fn, next_fn)
         vertical_align = "center",
         visible = false,
         tags = {
-            page_history = {}
+            page_history = {},
+            current_selected = nil
         },
         style_mods = {
             top_margin = 6,

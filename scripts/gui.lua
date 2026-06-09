@@ -61,7 +61,7 @@ local function on_channel_open(e)
     if window then
         local window_tags = window.tags or {}
         window_tags.current_channel = channel_id
-        window_tags.stations_page = 1
+        window_tags.radios_page = 1
         window.tags = window_tags
     end
 
@@ -189,14 +189,6 @@ local function on_locate_radio_click(e)
 
             player.zoom = 3.0
 
-            -- local display_name
-
-            -- if player.surface.platform then
-            --     display_name = player.surface.platform.name
-            -- else
-            --     display_name = { "space-location-name." .. player.surface.name }
-            -- end
-
             local surface_name, surface_sprite = gui_elements.get_surface_name_and_sprite(player.surface)
 
             local select_box = target_radio_entity.prototype.selection_box
@@ -248,45 +240,54 @@ local function pagination_tab(pagination, page, total)
     return pagination
 end
 
-local function load_page(table, pagination, items, current_page, row_fn, row_deleted_fn)
-    local saved_index = pagination.tags.page_history[tostring(current_page)]
-
-    local doIndex = tonumber(saved_index) or saved_index
-
+local function load_page(table_body, pagination, items, current_page, row_fn, row_deleted_fn)
+    local page_data = pagination.tags.page_history[tostring(current_page)] or items or {}
+    local current_page_string = tostring(current_page)
     local displayed_count = 0
+    local table_size_page = table_size(page_data)
+    local current_index = nil
+    local history = {}
 
-    if doIndex and items[doIndex] == nil then
-        doIndex = nil
-    end
+    current_index = next(page_data, current_index)
 
-    while displayed_count < GUI_ITEMS_PER_PAGE do
-        local next_key = next(items, doIndex)
-
-        if next_key == nil then
-            break
-        end
-
-        doIndex = next_key
-        local item = items[doIndex]
-
-        if item then
-            row_fn(table, doIndex, item)
+    while displayed_count < GUI_ITEMS_PER_PAGE and current_index ~= nil do
+        if items[tonumber(current_index)] then
+            row_fn(table_body, tonumber(current_index))
         else
-            row_deleted_fn(table)
+            row_deleted_fn(table_body, tonumber(current_index))
         end
 
         displayed_count = displayed_count + 1
+        history[tostring(current_index)] = true
+
+        if table_size_page ~= 1 then
+            current_index = next(page_data, current_index)
+        else
+            current_index = next(items, tonumber(current_index))
+        end
     end
 
-    if doIndex then
-        local current_tags = pagination.tags or {}
-        local next_page_key = tostring(current_page + 1)
-        local string_index = tostring(doIndex)
+    local current_tags = pagination.tags or {}
 
-        if not current_tags.page_history[next_page_key] then
-            current_tags.page_history[next_page_key] = string_index
-            pagination.tags = current_tags
+    if current_index ~= nil then
+        local current_page_next_string = tostring(current_page + 1)
+
+        if not current_tags.page_history[current_page_next_string] then
+            current_tags.page_history[current_page_next_string] = { [tostring(current_index)] = true }
         end
+
+        pagination.tags = current_tags
+    end
+
+    if not current_tags.page_history[current_page_string] then
+        current_tags.page_history[current_page_string] = history
+        pagination.tags = current_tags
+    end
+
+    if table_size_page == 1 then
+        current_tags.page_history[current_page_string] = nil
+        current_tags.page_history[current_page_string] = history
+        pagination.tags = current_tags
     end
 end
 
@@ -295,6 +296,13 @@ function gui.load_tab_radios(window, channel_id, page)
     scroll_zone.clear()
 
     local pagination = gui_elements.get_radios_pagination_flow(window)
+    local current_tags = pagination.tags or {}
+
+    if not current_tags.current_selected or current_tags.current_selected ~= channel_id then
+        current_tags.page_history = {}
+        current_tags.current_selected = channel_id
+        pagination.tags = current_tags
+    end
 
     local current_channel_radios = storage.channels[channel_id] and storage.channels[channel_id].radios or {}
     local total_radios = table_size(current_channel_radios)
@@ -308,7 +316,7 @@ function gui.load_tab_radios(window, channel_id, page)
 
     local radios_table = gui_elements.radios_head()
 
-    local row = function(table_body, index, radio_value)
+    local row = function(table_body, index)
         local current_radio = storage.radios and storage.radios[index] or {}
 
         if current_radio.entity and current_radio.entity.valid then
@@ -319,8 +327,8 @@ function gui.load_tab_radios(window, channel_id, page)
         end
     end
 
-    local row_deleted = function(table_body)
-        return gui_elements.radios_deleted_row(table_body)
+    local row_deleted = function(table_body, index)
+        return gui_elements.radios_deleted_row(table_body, index)
     end
 
     load_page(radios_table, pagination, current_channel_radios, page, row, row_deleted)
@@ -334,7 +342,7 @@ function gui.load_tab_channels(window, page)
 
     local pagination = gui_elements.get_channels_pagination_flow(window)
     local current_active_channel = window.tags.current_channel
-    local total_channels = table_size(storage.channels)
+    local total_channels = table_size(storage.hubs)
 
     if total_channels == 0 then
         flib_gui.add(scroll_zone, gui_elements.no_channels())
@@ -346,22 +354,29 @@ function gui.load_tab_channels(window, page)
 
     local channels_table = gui_elements.channels_head()
 
-    local row = function(table_body, index, channel)
+    local row = function(table_body, index)
         local count_radios = 0
-        local is_selected = current_active_channel == index
+        local channel_name = storage.hubs[index] or {}
+
+        if not channel_name then
+            return
+        end
+
+        local is_selected = current_active_channel == channel_name
+        local channel = storage.channels[channel_name] or {}
 
         if channel.radios then
             count_radios = table_size(channel.radios)
         end
 
-        return gui_elements.channels_row(table_body, index, count_radios, is_selected, on_channel_open)
+        return gui_elements.channels_row(table_body, channel_name, count_radios, is_selected, on_channel_open)
     end
 
-    local row_deleted = function(table_body)
+    local row_deleted = function(table_body, index)
         return gui_elements.channels_deleted_row(table_body)
     end
 
-    load_page(channels_table, pagination, storage.channels, page, row, row_deleted)
+    load_page(channels_table, pagination, storage.hubs, page, row, row_deleted)
 
     flib_gui.add(scroll_zone, channels_table)
 end
