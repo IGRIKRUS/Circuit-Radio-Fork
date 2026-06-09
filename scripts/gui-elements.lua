@@ -27,6 +27,23 @@ function gui_elements.parse_channel_key(key_string)
     return scope_sprite, signal_sprite, channel_number
 end
 
+function gui_elements.get_surface_name_and_sprite(surface)
+    local surface_sprite = "virtual-signal/signal-unknown"
+
+    if prototypes.space_location[surface.name] then
+        surface_sprite = "space-location/" .. surface.name
+    end
+
+    local surface_name = { "?", { "space-location-name." .. surface.name }, surface.name }
+
+    if surface.platform then
+        surface_sprite = "item/space-platform-hub"
+        surface_name = surface.platform.name
+    end
+
+    return surface_name, surface_sprite
+end
+
 function gui_elements.no_channels()
     return {
         type = "flow",

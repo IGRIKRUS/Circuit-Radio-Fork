@@ -189,13 +189,15 @@ local function on_locate_radio_click(e)
 
             player.zoom = 3.0
 
-            local display_name
+            -- local display_name
 
-            if player.surface.platform then
-                display_name = player.surface.platform.name
-            else
-                display_name = { "space-location-name." .. player.surface.name }
-            end
+            -- if player.surface.platform then
+            --     display_name = player.surface.platform.name
+            -- else
+            --     display_name = { "space-location-name." .. player.surface.name }
+            -- end
+
+            local surface_name, surface_sprite = gui_elements.get_surface_name_and_sprite(player.surface)
 
             local select_box = target_radio_entity.prototype.selection_box
             local pos = target_radio_entity.position
@@ -215,7 +217,8 @@ local function on_locate_radio_click(e)
 
             player.print({
                 "radio-interface.msg-zoomed",
-                display_name,
+                "[img=" .. surface_sprite .. "]",
+                surface_name,
                 target_radio_entity.position.x,
                 target_radio_entity.position.y
             })
@@ -310,15 +313,7 @@ function gui.load_tab_radios(window, channel_id, page)
 
         if current_radio.entity and current_radio.entity.valid then
             local entity = current_radio.entity
-            local surface = entity.surface
-
-            local surface_sprite = "space-location/" .. surface.name
-            local surface_name = { "space-location-name." .. surface.name }
-
-            if surface.platform then
-                surface_sprite = "item/space-platform-hub"
-                surface_name = surface.platform.name
-            end
+            local surface_name, surface_sprite = gui_elements.get_surface_name_and_sprite(entity.surface)
 
             return gui_elements.radios_row(table_body, index, surface_sprite, surface_name, on_locate_radio_click)
         end
